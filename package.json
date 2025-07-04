@@ -1,0 +1,14 @@
+{
+  "name": "epam-scraper",
+  "version": "1.0.0",
+  "description": "A Puppeteer scraper for EPAM job listings in Romania",
+  "main": "scraper.js",
+  "scripts": {
+    "start": "node scraper.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^23.0.0"
+  }
+}
