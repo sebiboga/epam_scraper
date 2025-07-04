@@ -26,9 +26,9 @@ puppeteer.use(StealthPlugin());
   });
 
   // Wait extra time for Cloudflare challenge to pass
-  await page.waitForTimeout(7000);
+  await new Promise(resolve => setTimeout(resolve, 7000));
 
-  // Optional: Click "View More" buttons up to 3 times to load more jobs
+  // Function to click "View More" button if exists
   async function clickViewMore(times = 3) {
     for (let i = 0; i < times; i++) {
       try {
@@ -40,7 +40,8 @@ puppeteer.use(StealthPlugin());
         }
         console.log('Clicking "View More" button...');
         await button.click();
-        await page.waitForTimeout(3000);
+        // Wait for new jobs to load
+        await new Promise(resolve => setTimeout(resolve, 3000));
       } catch {
         console.log('No "View More" button found or timeout reached.');
         break;
@@ -50,17 +51,15 @@ puppeteer.use(StealthPlugin());
 
   await clickViewMore();
 
-  // Wait for job listings container
+  // Wait for job listings container (try catch to avoid crash)
   try {
     await page.waitForSelector('section.job-listings', { timeout: 5000 });
   } catch {
-    console.warn('Job listings container not found, trying alternative selector...');
-    // Try alternative selector or proceed anyway
+    console.warn('Job listings container not found, continuing anyway...');
   }
 
   // Extract job data
   const jobs = await page.evaluate(() => {
-    // Select job links by class or URL pattern
     const jobLinks = Array.from(
       document.querySelectorAll('a.job-listing, a[href*="/careers/job-listings/"]')
     );
