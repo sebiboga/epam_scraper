@@ -1,4 +1,4 @@
-name: Run Puppeteer Scraper
+name: Run EPAM Puppeteer Scraper
 
 on:
   push:
