@@ -2,72 +2,64 @@ const puppeteer = require('puppeteer');
 
 (async () => {
   const browser = await puppeteer.launch({
-  args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  headless: true
-});
-
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
   const page = await browser.newPage();
 
-  // Set viewport and timeout
-  await page.setViewport({ width: 1200, height: 800 });
-  page.setDefaultTimeout(10000);
-
-  // Go to EPAM Romania job listings
+  await page.setViewport({ width: 1200, height: 900 });
   await page.goto('https://www.epam.com/careers/job-listings?country=Romania', { waitUntil: 'networkidle2' });
 
-  // Function to click "View More" buttons until none left or max tries
-  async function clickViewMore(maxClicks = 5) {
-    for (let i = 0; i < maxClicks; i++) {
+  // Function to click "View More" button if exists
+  async function clickViewMore(times = 3) {
+    for (let i = 0; i < times; i++) {
       try {
-        // Wait for "View More" button
-        const viewMoreSelector = 'section > a:contains("View More"), a[aria-label="View More"]';
+        // Wait for the "View More" button to appear (timeout 3s)
+        await page.waitForSelector('section > a.button--primary', { timeout: 3000 });
+        const button = await page.$('section > a.button--primary');
 
-        // Using XPath for "View More" button text
-        const [button] = await page.$x("//a[contains(text(), 'View More')]");
-        if (!button) break;
+        if (!button) {
+          console.log('No more "View More" button found.');
+          break;
+        }
 
+        console.log('Clicking "View More" button...');
         await button.click();
-        // Wait for new jobs to load
-        await page.waitForTimeout(2000);
+
+        // Wait for new jobs to load (adjust timeout as needed)
+        await page.waitForTimeout(3000);
       } catch (e) {
-        // No more buttons or error, break loop
+        console.log('No "View More" button found or timeout reached.');
         break;
       }
     }
   }
 
-  // Click "View More" buttons to load all jobs
   await clickViewMore();
 
-  // Extract job listings
-  const jobs = await page.evaluate(() => {
-    // Select all job listing elements
-    const jobNodes = document.querySelectorAll('section.job-listing > a, section > a.job-listing');
+  // Wait for job listings container to appear
+  await page.waitForSelector('section.job-listings', { timeout: 5000 });
 
-    const results = [];
-    jobNodes.forEach(job => {
+  // Extract jobs
+  const jobs = await page.evaluate(() => {
+    // Select all job links inside the job listings section
+    const jobLinks = Array.from(document.querySelectorAll('section.job-listings a.job-listing'));
+
+    return jobLinks.map(job => {
       const jobTitle = job.querySelector('h3')?.innerText.trim() || null;
       const jobLink = job.href || null;
 
-      // Since we are on Romania page, city and country are Romania
-      const city = 'Romania';
-      const country = 'Romania';
-
-      if (jobTitle && jobLink) {
-        results.push({
-          job_title: jobTitle,
-          job_link: jobLink,
-          company: 'epam',
-          city,
-          country
-        });
-      }
-    });
-
-    return results;
+      return {
+        job_title: jobTitle,
+        job_link: jobLink,
+        company: 'epam',
+        city: 'Romania',
+        country: 'Romania'
+      };
+    }).filter(job => job.job_title && job.job_link);
   });
 
-  console.log(JSON.stringify(jobs, null, 2));
+  console.log('Extracted jobs:', JSON.stringify(jobs, null, 2));
 
   await browser.close();
 })();
