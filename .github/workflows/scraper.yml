@@ -1,33 +1,16 @@
-name: Run EPAM Puppeteer Scraper
-
+name: Install Chromium
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
-  scrape:
+  install-chromium:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
+      - name: Install Chromium
         run: |
-          if [ -f yarn.lock ]; then
-            yarn install --frozen-lockfile
-          elif [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
-
-      - name: Run Puppeteer scraper
-        run: node scraper.js
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+          chromium-browser --version
