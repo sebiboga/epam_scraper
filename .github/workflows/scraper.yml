@@ -14,3 +14,4 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y chromium-browser
           chromium-browser --version
+          chromium --headless --disable-gpu https://www.epam.com/careers/job-listings?country=Romania
