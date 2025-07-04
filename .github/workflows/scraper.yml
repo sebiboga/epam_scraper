@@ -16,4 +16,4 @@ jobs:
           chromium-browser --version
       - name: Run Chromium
         run: |
-         chromium-browser --headless --dump-dom https://www.epam.com/careers/job-listings?country=Romania
+         chromium-browser --headless --no-sandbox --dump-dom https://www.example.com/careers/job-listings?country=Romania
