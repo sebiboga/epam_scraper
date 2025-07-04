@@ -1,0 +1,28 @@
+name: Run Puppeteer Scraper
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # allows manual run from Actions tab
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # or your preferred Node version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Puppeteer scraper
+        run: node scraper.js
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'false'
